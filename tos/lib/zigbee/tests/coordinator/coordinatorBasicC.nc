@@ -10,6 +10,9 @@
 #define lclPrintf			printfz1
 #define lclprintfUART_init		printfz1_init
 
+#define MESSAGE_LENGTH 18
+#define ENCRYPTION_ON 1
+
 module coordinatorBasicC 
 {
   uses {
@@ -43,16 +46,17 @@ implementation
 	// This function initializes the variables.
 
 	/**************************************************/
-	  /* Secret key */
-	  uint8_t K[32] =  {0x80,0x70,0x60,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	
+		/* Secret key */
+		uint8_t K[32] =  {0x80,0x70,0x60,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
 
-	  /* Array to store the expanded key */
-	  uint8_t exp[240];
+		/* Array to store the expanded key */
+		uint8_t exp[240];
 
-	  /* Ciphertext blocks. */
-	    uint8_t dec[16];
+		/* Ciphertext blocks. */
+		uint8_t dec[MESSAGE_LENGTH];
 
-  /**************************************************/
+  	/**************************************************/
 
 	void initVariables()
 	{
@@ -65,7 +69,7 @@ implementation
 		printfz1_init();
 
 		/* Key expansion */
-    	call AES.keyExpansion(exp,K);
+    		call AES.keyExpansion(exp,K);
 
 		initVariables();
 
@@ -218,18 +222,42 @@ implementation
 		// TDBS mechanism
 		beacon_scheduling *beacon_scheduling_ptr;
 
-		lclPrintf("NLDE_DATA.indication\n", "");
-		printfz1("C: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",Nsdu[0],Nsdu[1],Nsdu[2],Nsdu[3],Nsdu[4],Nsdu[5],Nsdu[6],Nsdu[7],Nsdu[8],Nsdu[9],Nsdu[10],Nsdu[11],Nsdu[12],Nsdu[13],Nsdu[14],Nsdu[15]);
-      
-      /**************************************************/
-        /* First block decryption */
-        call AES.decrypt(Nsdu,exp,dec);
-      printfz1("D: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n\n",dec[0],dec[1],dec[2],dec[3],dec[4],dec[5],dec[6],dec[7],dec[8],dec[9],dec[10],dec[11],dec[12],dec[13],dec[14],dec[15]);
-      /**************************************************/
-		lclPrintf("%c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c\n", dec[0], dec[1], dec[2], dec[3], dec[4], dec[5],
-					dec[6], dec[7], dec[8], dec[9], dec[10], dec[11],
-					dec[12], dec[13], dec[14], dec[15]);
+		int i =0;
 
+		lclPrintf("NLDE_DATA.indication\n", "");
+
+		if(ENCRYPTION_ON){
+
+			lclPrintf("C:");
+			for(i=0;i<=MESSAGE_LENGTH;i++){
+				lclPrintf("%02x ", Nsdu[i]);	
+			}
+			lclPrintf("\n");
+
+			/* First block decryption */
+			lclPrintf("D:");
+			call AES.decrypt(Nsdu,exp,dec);
+			for(i=0;i<=MESSAGE_LENGTH;i++){
+				lclPrintf("%02x ", dec[i]);
+
+			}
+			lclPrintf("\n\n");
+
+			for(i=0;i<=MESSAGE_LENGTH;i++){
+				lclPrintf("%c ", dec[i]);
+
+			}
+			lclPrintf("\n\n");  
+   
+		} else {
+
+			for(i=0;i<=MESSAGE_LENGTH;i++){
+				lclPrintf("%c ", Nsdu[i]);
+
+			}
+			lclPrintf("\n\n");
+
+		}
 		call Leds.led0Toggle();
 		
 		// The packet is for me (check has been done into MCPS_DATA.indication)
