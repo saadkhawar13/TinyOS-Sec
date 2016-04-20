@@ -19,11 +19,9 @@ implementation
 {
 	components MainC;
 	components LedsC;
-	components AESC;
 	components end_deviceBasicC as App;
 	App.Boot -> MainC;
 	App.Leds -> LedsC;
-	App.AES -> AESC;
 
 	components new TimerMilliC() as T_init;
 	App.T_init -> T_init;

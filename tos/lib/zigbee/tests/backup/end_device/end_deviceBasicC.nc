@@ -16,7 +16,6 @@ module end_deviceBasicC
 	uses {
 		interface Boot;
 		interface Leds;
-		interface AES;
 
 		interface NLDE_DATA;
 
@@ -51,20 +50,6 @@ implementation
 	uint8_t maxJoinTrials;
 	uint16_t myParentAddress;
 
-	//sandesh added
-	/**************************************************/
-	  /* Secret key */
-	  uint8_t K[32] =  {0x80,0x70,0x60,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-
-	  /* Array to store the expanded key */
-	  uint8_t exp[240];
-
-	  /* Ciphertext blocks.*/
-	  uint8_t cip[16];
-	  uint8_t dec[16];
-
-	/**************************************************/
-
 	task void KeepAlive();
 
 
@@ -87,22 +72,7 @@ implementation
 		lclPrintf("%c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c\n", nsdu_pay[0], nsdu_pay[1], nsdu_pay[2], nsdu_pay[3], nsdu_pay[4], nsdu_pay[5],
 				nsdu_pay[6], nsdu_pay[7], nsdu_pay[8], nsdu_pay[9], nsdu_pay[10],
 				nsdu_pay[11], nsdu_pay[12], nsdu_pay[13], nsdu_pay[14], nsdu_pay[15]);
-		
-		/**************************************************/
-      /* Print plain text */
-        lclPrintf("P: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",nsdu_pay[0],nsdu_pay[1],nsdu_pay[2],nsdu_pay[3],nsdu_pay[4],nsdu_pay[5],nsdu_pay[6],nsdu_pay[7],nsdu_pay[8],nsdu_pay[9],nsdu_pay[10],nsdu_pay[11],nsdu_pay[12],nsdu_pay[13],nsdu_pay[14],nsdu_pay[15]);
-
-        /* First block encryption*/
-        call AES.encrypt(nsdu_pay,exp,cip);
-        lclPrintf("C: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",cip[0],cip[1],cip[2],cip[3],cip[4],cip[5],cip[6],cip[7],cip[8],cip[9],cip[10],cip[11],cip[12],cip[13],cip[14],cip[15]);
-
-        /* First block decryption */
-        call AES.decrypt(cip,exp,dec);
-        lclPrintf("D: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n\n",dec[0],dec[1],dec[2],dec[3],dec[4],dec[5],dec[6],dec[7],dec[8],dec[9],dec[10],dec[11],dec[12],dec[13],dec[14],dec[15]);
-
-      /**************************************************/
-
-		call NLDE_DATA.request(0x0000, 16, cip, 0, 1, 0x00, 0);
+		call NLDE_DATA.request(0x0000, 16, nsdu_pay, 0, 1, 0x00, 0);
 		call Leds.led0Toggle();
 	}
   
@@ -121,7 +91,6 @@ implementation
 	{
 		//printfUART_init();
 		printfz1_init();
-		call AES.keyExpansion(exp,K);
 
 		initVariables();
 		

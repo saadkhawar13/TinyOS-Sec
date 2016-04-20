@@ -20,10 +20,12 @@ implementation
 {
 	components MainC;
 	components LedsC;
+	components AESC;
 	components coordinatorBasicC as App;
 
 	App.Boot -> MainC;
 	App.Leds -> LedsC;
+	App.AES -> AESC;
 	
 	components new TimerMilliC() as T_init;
 	App.T_init -> T_init;

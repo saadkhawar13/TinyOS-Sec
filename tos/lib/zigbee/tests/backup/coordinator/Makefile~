@@ -1,5 +1,5 @@
 COMPONENT=coordinatorBasicAppC
-PLATFORMS = z1
+PLATFORMS = telosb
 
 ZIGBEE=$(TOSDIR)/lib/zigbee/clusterTree
 
@@ -12,7 +12,6 @@ PFLAGS += 	-I$(ZIGBEE)/includes	\
 
 
 PFLAGS += -DIM_COORDINATOR
-PFLAGS += -DPRINTFUART_ENABLED
 
 ifdef DEF_MAC_PANID
 PFLAGS += -DDEF_MAC_PANID=$(DEF_MAC_PANID)

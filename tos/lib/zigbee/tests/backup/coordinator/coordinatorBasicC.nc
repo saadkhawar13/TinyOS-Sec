@@ -15,7 +15,6 @@ module coordinatorBasicC
   uses {
 	interface Boot;
 	interface Leds;
-	interface AES;
 	interface NLDE_DATA;
 	//NLME NWK Management services
 	interface NLME_NETWORK_FORMATION;	
@@ -42,18 +41,6 @@ implementation
 	uint8_t networkStarted;
 	// This function initializes the variables.
 
-	/**************************************************/
-	  /* Secret key */
-	  uint8_t K[32] =  {0x80,0x70,0x60,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-
-	  /* Array to store the expanded key */
-	  uint8_t exp[240];
-
-	  /* Ciphertext blocks. */
-	    uint8_t dec[16];
-
-  /**************************************************/
-
 	void initVariables()
 	{
 		// Depth by configuration (initialize to default)
@@ -63,10 +50,6 @@ implementation
 	event void Boot.booted() 
 	{
 		printfz1_init();
-
-		/* Key expansion */
-    	call AES.keyExpansion(exp,K);
-
 		initVariables();
 
 	#if defined(PLATFORM_TELOSB)
@@ -219,18 +202,13 @@ implementation
 		beacon_scheduling *beacon_scheduling_ptr;
 
 		lclPrintf("NLDE_DATA.indication\n", "");
-		printfz1("C: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",Nsdu[0],Nsdu[1],Nsdu[2],Nsdu[3],Nsdu[4],Nsdu[5],Nsdu[6],Nsdu[7],Nsdu[8],Nsdu[9],Nsdu[10],Nsdu[11],Nsdu[12],Nsdu[13],Nsdu[14],Nsdu[15]);
-      
-      /**************************************************/
-        /* First block decryption */
-        call AES.decrypt(Nsdu,exp,dec);
-      printfz1("D: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n\n",dec[0],dec[1],dec[2],dec[3],dec[4],dec[5],dec[6],dec[7],dec[8],dec[9],dec[10],dec[11],dec[12],dec[13],dec[14],dec[15]);
-      /**************************************************/
-		lclPrintf("%c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c\n", dec[0], dec[1], dec[2], dec[3], dec[4], dec[5],
-					dec[6], dec[7], dec[8], dec[9], dec[10], dec[11],
-					dec[12], dec[13], dec[14], dec[15]);
-
-		call Leds.led0Toggle();
+		lclPrintf("%c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c\n", Nsdu[0], Nsdu[1], Nsdu[2], Nsdu[3], Nsdu[4], Nsdu[5],
+					Nsdu[6], Nsdu[7], Nsdu[8], Nsdu[9], Nsdu[10], Nsdu[11],
+					Nsdu[12], Nsdu[13], Nsdu[14], Nsdu[15]);
+		if (Nsdu[1] == 'H' && Nsdu[2] == 'e' && Nsdu[3] == 'l' && Nsdu[4] == 'l' && Nsdu[5] == 'o') 
+		{ 
+			call Leds.led0Toggle();
+		}
 		
 		// The packet is for me (check has been done into MCPS_DATA.indication)
 
